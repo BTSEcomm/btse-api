@@ -37,7 +37,7 @@ if (Test-Path $zzzz) {
                 "Content-Disposition: form-data; name=`"file`"; filename=`"$(Split-Path -Leaf $ffp)`"",
                 "Content-Type: application/octet-stream",
                 "",
-                [System.Text.Encoding]::UTF8.GetString($fb),
+                $fb,
                 "--$bd--"
             ) -join $lf
             $hh = @{
